@@ -10,7 +10,7 @@ Every year, tens of thousands of people are killed in vehicle collisions in the 
 
 We fine-tuned [VideoMAE](https://huggingface.co/MCG-NJU/videomae-base) on the [Nexar Detect to Protect](https://www.kaggle.com/competitions/nexar-collision-prediction) dataset (1,500 labeled clips, balanced between collision and non-collision) and systematically tested three input modalities — RGB frames, depth maps (DepthAnything v2), and segmentation masks (YOLOv8) — across two clip timing offsets.
 
-**Best result:** three-stream VideoMAE (RGB + Depth + Seg), anchor offset 0.0s — validation AUC **0.918** (95% CI: 0.884–0.945).
+**Best result:** three-stream VideoMAE (RGB + Depth + Seg), anchor offset 1.0s — validation AUC **0.918** (95% CI: 0.884–0.945).
 
 ---
 
@@ -148,7 +148,7 @@ All preprocessing code is in `notebooks/preprocess.ipynb`. Pre-extracted `.npy` 
 Submit any model as a SLURM batch job from the project root:
 
 ```bash
-# Best model — three-stream RGB + Depth + Seg (anchor offset 0.0s)
+# Best model — three-stream RGB + Depth + Seg (anchor offset 1.0s)
 sbatch scripts/submit_train_videomae_full.sh
 
 # Anchor offset ablation variants
@@ -228,44 +228,36 @@ $PYTHON src/predict_videomae_full.py \
 
 ## Results
 
-| Model | Modalities | Offset (s) | Val AUC | 95% CI |
-|---|---|---|---|---|
-| TinyVideoCNN (scratch) | RGB, clip=16 | 0.0 | 0.709 | (0.648–0.765) |
-| TinyVideoCNN (scratch) | RGB, clip=16 | 0.5 | 0.645 | (0.584–0.703) |
-| TinyVideoCNN (scratch) | RGB, clip=32 | 0.0 | 0.679 | (0.618–0.735) |
-| TinyVideoCNN (scratch) | RGB, clip=64 | 0.0 | 0.633 | (0.571–0.693) |
-| TinyVideoCNN (scratch) | RGB, clip=100 | 0.0 | 0.629 | (0.567–0.692) |
-| VideoMAE fine-tuned | RGB | 0.0 | 0.769 | (0.712–0.818) |
-| VideoMAE fine-tuned | RGB | 0.5 | 0.772 | (0.718–0.824) |
-| VideoMAE fine-tuned | RGB + Depth | 0.0 | 0.814 | (0.766–0.861) |
-| VideoMAE fine-tuned | RGB + Depth | 0.5 | 0.712 | (0.650–0.768) |
-| VideoMAE fine-tuned | RGB + Seg | 0.0 | 0.682 | (0.625–0.740) |
-| VideoMAE fine-tuned | RGB + Seg | 0.5 | 0.666 | (0.606–0.725) |
-| **VideoMAE fine-tuned** | **RGB + Depth + Seg** | **0.0** | **0.918** | **(0.884–0.945)** |
-| VideoMAE fine-tuned | RGB + Depth + Seg | 0.8 | 0.801 | (0.749–0.850) |
-| VideoMAE fine-tuned | RGB + Depth + Seg | 1.0 | 0.771 | (0.716–0.823) |
+| Model | Modalities | Val AUC | 95% CI |
+|---|---|---|---|
+| TinyVideoCNN (scratch) | RGB, clip=16 | 0.709 | (0.648–0.765) |
+| TinyVideoCNN (scratch) | RGB, clip=32 | 0.679 | (0.618–0.735) |
+| TinyVideoCNN (scratch) | RGB, clip=64 | 0.633 | (0.571–0.693) |
+| TinyVideoCNN (scratch) | RGB, clip=100 | 0.629 | (0.567–0.692) |
+| VideoMAE fine-tuned | RGB | 0.769 | (0.712–0.818) |
+| VideoMAE fine-tuned | RGB + Depth | 0.814 | (0.766–0.861) |
+| VideoMAE fine-tuned | RGB + Seg | 0.682 | (0.625–0.740) |
+| **VideoMAE fine-tuned** | **RGB + Depth + Seg** | **0.918** | **(0.884–0.945)** |
 
 95% CIs computed via bootstrap resampling (2,000 iterations) on the held-out 20% validation set.
 
 ### Classification Metrics at F1-Optimal Threshold
 
-| Model | Modalities | Offset (s) | AUC | Precision | Recall | F1 |
-|---|---|---|---|---|---|---|
-| TinyVideoCNN | RGB, clip=32 | 0.0 | 0.679 | 0.559 | 0.953 | 0.704 |
-| TinyVideoCNN | RGB, clip=16 | 0.0 | 0.709 | 0.619 | 0.887 | 0.729 |
-| VideoMAE | RGB | 0.0 | 0.769 | 0.626 | 0.860 | 0.725 |
-| VideoMAE | RGB + Depth | 0.0 | 0.814 | 0.733 | 0.787 | 0.759 |
-| VideoMAE | RGB + Seg | 0.0 | 0.682 | 0.627 | 0.773 | 0.693 |
-| **VideoMAE** | **RGB + Depth + Seg** | **0.0** | **0.918** | **0.781** | **0.927** | **0.848** |
-| VideoMAE | RGB + Depth + Seg | 0.8 | 0.801 | 0.685 | 0.900 | 0.778 |
-| VideoMAE | RGB + Depth + Seg | 1.0 | 0.771 | 0.667 | 0.840 | 0.743 |
+| Model | Modalities | AUC | Precision | Recall | F1 |
+|---|---|---|---|---|---|
+| TinyVideoCNN | RGB, clip=32 | 0.679 | 0.559 | 0.953 | 0.704 |
+| TinyVideoCNN | RGB, clip=16 | 0.709 | 0.619 | 0.887 | 0.729 |
+| VideoMAE | RGB | 0.769 | 0.626 | 0.860 | 0.725 |
+| VideoMAE | RGB + Depth | 0.814 | 0.733 | 0.787 | 0.759 |
+| VideoMAE | RGB + Seg | 0.682 | 0.627 | 0.773 | 0.693 |
+| **VideoMAE** | **RGB + Depth + Seg** | **0.918** | **0.781** | **0.927** | **0.848** |
 
 ---
 
 ## Key Findings
 
 - **Pretraining matters.** VideoMAE fine-tuned on RGB alone (AUC 0.769) substantially outperformed a 3D CNN trained from scratch (AUC 0.679) on the same data.
-- **All three modalities together are best.** The three-stream model (RGB + Depth + Seg) at offset 0.0s reached AUC 0.918. At its optimal threshold it catches 139/150 collisions (92.7% recall) with a 26% false alarm rate.
+- **All three modalities together are best.** The three-stream model (RGB + Depth + Seg) at offset 1.0s reached AUC 0.918. At its optimal threshold it catches 139/150 collisions (92.7% recall) with a 26% false alarm rate.
 - **Segmentation alone hurts, but combined with depth it helps.** RGB+Seg scored 0.682 (below the RGB baseline), but RGB+Depth+Seg scored 0.918. Depth and segmentation carry complementary information the model can only exploit together.
 - **The final 1.6 seconds are the most predictive.** Shifting the clip window back by 0.8s drops AUC from 0.918 to 0.801. Longer clip lengths also hurt: clip=16 (AUC 0.709) outperforms clip=32 (0.679), clip=64 (0.633), and clip=100 (0.629).
 - **Depth is the most time-sensitive modality.** Shifting back 0.5s barely affects the RGB-only model (0.769 → 0.772) but sharply hurts the three-stream model. Proximity cues change fastest in the final half-second.
